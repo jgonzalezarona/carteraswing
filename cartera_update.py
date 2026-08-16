@@ -1,20 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-cartera_update.py — Genera el JSON de actualización semanal para Cartera Swing
+cartera_update.py — Genera el JSON de actualización semanal leyendo de la web del scanner
 """
 
 import json
-import os
+import time
 import requests
 import yfinance as yf
 
 UPDATER_FILE = "cartera_update.json"
+# URL de tu otro repositorio donde está el scanner
+SWING_DATA_URL = "https://jgonzalezarona.github.io/especulador/swing_data.json"
 
 def main():
+    print("Descargando datos desde el SwingScanner...")
+    
     swing_data = {}
-    if os.path.exists("swing_data.json"):
-        with open("swing_data.json", "r", encoding="utf-8") as f:
-            swing_data = json.load(f)
+    try:
+        # Añadimos un timestamp para evitar que GitHub nos sirva una versión cacheada antigua
+        res = requests.get(f"{SWING_DATA_URL}?v={int(time.time())}", timeout=10)
+        if res.ok:
+            swing_data = res.json()
+            print("Datos descargados correctamente.")
+        else:
+            print(f"Error descargando datos: HTTP {res.status_code}")
+    except Exception as e:
+        print(f"Error de conexión: {e}")
     
     stocks = swing_data.get("stocks", [])
     universe_size = swing_data.get("universe_size", 578)
