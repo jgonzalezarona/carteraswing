@@ -1,0 +1,38 @@
+name: Actualizador Semanal Cartera Swing
+
+on:
+  schedule:
+    # Se ejecuta todos los Domingos a las 20:00 UTC
+    - cron: '0 20 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas requests
+
+      - name: Ejecutar Actualizador de Cartera
+        run: python cartera_update.py
+
+      - name: Guardar y publicar cambios en GitHub
+        run: |
+          git config --global user.name "cartera-bot"
+          git config --global user.email "bot@especulador.local"
+          git add cartera_update.json
+          git commit -m "Actualización semanal de datos de Cartera Swing [skip ci]" || exit 0
+          git push
