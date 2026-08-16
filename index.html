@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartera Swing — Gestión UCITS adaptada</title>
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121820; --panel2:#0e141b; --line:#1f2a36;
+  --txt:#d6dde5; --dim:#7d8a99; --faint:#4a5866;
+  --green:#2fbf71; --amber:#e8a33d; --red:#e05252; --blue:#4d9de0;
+  --mono:'JetBrains Mono','Cascadia Code',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:13px;line-height:1.5;padding:0 0 60px}
+header{display:flex;align-items:center;gap:18px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:20}
+header h1{font-size:19px;letter-spacing:1px;font-weight:700}
+header h1 span{color:var(--amber)}
+.hmeta{color:var(--dim);font-size:12px}
+.hbtns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+button{font-family:var(--mono);font-size:12px;background:var(--panel);color:var(--txt);border:1px solid var(--line);padding:7px 13px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--dim)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button.primary{border-color:var(--green);color:var(--green)}
+button.danger{border-color:var(--red);color:var(--red)}
+main{max-width:1240px;margin:0 auto;padding:20px 22px;display:flex;flex-direction:column;gap:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+h2{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+h2 .tag{margin-left:auto;font-size:11px;letter-spacing:0;text-transform:none}
+label{color:var(--dim);font-size:12px}
+input,select,textarea{font-family:var(--mono);font-size:13px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:6px 9px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+input[type=number]{width:110px}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--faint);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.tk{font-weight:700;font-size:14px}
+.badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:4px;border:1px solid;letter-spacing:.5px;white-space:nowrap}
+.b-green{color:var(--green);border-color:var(--green)}
+.b-amber{color:var(--amber);border-color:var(--amber)}
+.b-red{color:var(--red);border-color:var(--red);background:rgba(224,82,82,.08)}
+.b-blue{color:var(--blue);border-color:var(--blue)}
+.b-dim{color:var(--dim);border-color:var(--faint)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.g{color:var(--green)} .a{color:var(--amber)} .r{color:var(--red)} .d{color:var(--dim)}
+/* Semáforo de amplitud */
+.gauge-wrap{display:flex;flex-direction:column;gap:10px}
+.gauge-inputs{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.gauge-inputs .fld{display:flex;flex-direction:column;gap:4px}
+.gauge{position:relative;height:34px;border-radius:7px;overflow:hidden;display:flex;border:1px solid var(--line)}
+.gz{height:100%}
+.gz.z1{width:15%;background:rgba(224,82,82,.28)}
+.gz.z2{width:10%;background:rgba(232,163,61,.25)}
+.gz.z3{width:75%;background:rgba(47,191,113,.20)}
+.needle{position:absolute;top:0;bottom:0;width:3px;background:var(--txt);box-shadow:0 0 8px rgba(255,255,255,.6)}
+.gauge-labels{display:flex;font-size:10.5px;color:var(--faint)}
+.gauge-labels span:nth-child(1){width:15%}
+.gauge-labels span:nth-child(2){width:10%}
+.regime{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--panel2);border-radius:7px;border:1px solid var(--line)}
+.regime .big{font-size:22px;font-weight:700}
+.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:8px 14px;min-width:120px}
+.kpi .v{font-size:17px;font-weight:700}
+.kpi .l{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:1px}
+/* Reglas */
+.rules{background:linear-gradient(180deg,#10161e,#0c1219);border:1px solid #2a3a4d;border-radius:10px;padding:16px 18px;position:relative}
+.rules h2{color:var(--amber)}
+.rules ol{padding-left:22px;display:flex;flex-direction:column;gap:7px;color:var(--txt)}
+.rules li::marker{color:var(--amber);font-weight:700}
+.rules .lock{position:absolute;top:14px;right:16px;color:var(--amber);font-size:15px}
+.rules .motto{margin-top:12px;font-size:11.5px;color:var(--dim);border-top:1px dashed var(--line);padding-top:9px;font-style:italic}
+/* Bloques sectoriales */
+.blocks{display:flex;gap:10px;flex-wrap:wrap}
+.blk{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:8px 12px;min-width:150px;flex:1}
+.blk .bn{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.blk .bw{font-size:16px;font-weight:700}
+.blk.over{border-color:var(--red)}
+.blk .bar{height:5px;background:var(--line);border-radius:3px;margin-top:5px;overflow:hidden}
+.blk .bar i{display:block;height:100%;background:var(--green)}
+.blk.over .bar i{background:var(--red)}
+.blk.empty{opacity:.45}
+/* Checklist */
+.check-list{display:flex;flex-direction:column;gap:9px}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:7px}
+.check-item.done{opacity:.55}
+.check-item .st{color:var(--amber);font-weight:700;min-width:18px}
+/* Log */
+.logrow td{font-size:12px}
+.warnbox{border:1px solid var(--red);background:rgba(224,82,82,.08);color:var(--red);border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:10px;display:none}
+.formline{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.formline .fld{display:flex;flex-direction:column;gap:4px}
+.small{font-size:11px;color:var(--faint)}
+.xbtn{background:none;border:none;color:var(--faint);cursor:pointer;font-size:14px;padding:2px 6px}
+.xbtn:hover{color:var(--red)}
+.exp-compare{display:flex;align-items:center;gap:10px;margin-top:8px}
+.exp-track{flex:1;height:9px;background:var(--line);border-radius:5px;position:relative;overflow:visible}
+.exp-fill{height:100%;border-radius:5px;background:var(--blue)}
+.exp-target{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--amber)}
+footer{text-align:center;color:var(--faint);font-size:11px;margin-top:30px}
+@media (prefers-reduced-motion: no-preference){.needle,.exp-fill{transition:all .4s ease}}
+</style>
+</head>
+<body>
+<header>
+  <h1>CARTERA<span>SWING</span></h1>
+  <div class="hmeta" id="hmeta"></div>
+  <div class="hbtns">
+    <button class="primary" id="btnUpdate">Cargar actualización</button>
+    <input type="file" id="fileUpdate" accept=".json" style="display:none">
+    <button id="btnExport">Exportar JSON</button>
+    <button id="btnImport">Importar JSON</button>
+    <input type="file" id="fileImport" accept=".json" style="display:none">
+    <button class="danger" id="btnReset">Restaurar cartera inicial</button>
+  </div>
+</header>
+<main>
+
+  <!-- REGLAS -->
+  <div class="rules">
+    <span class="lock" aria-hidden="true">&#128274;</span>
+    <h2>Reglas del mandato — no se discuten</h2>
+    <ol>
+      <li><b>Salida</b> si: cierre semanal &lt; EMA21, cae del Trend Template, RS &lt; umbral, o earnings a &lt;7 días sin colchón de beneficio.</li>
+      <li><b>Las ganadoras no se recortan.</b> Si una posición supera el 10% por revalorización: infracción pasiva — se bloquea ampliar, nunca se vende por peso.</li>
+      <li><b>Entradas</b> siempre al 5%, siempre con Setup A o B activo, y solo si su bloque sectorial tiene hueco bajo el techo del 20%.</li>
+      <li><b>Ascenso a núcleo</b> (5% → 10%) solo con hueco libre, RS ≥ 95 y setup fresco. Nunca por antigüedad ni por simpatía.</li>
+      <li><b>Exposición la dicta la amplitud</b>, no la opinión: &gt;25% → 80% · 15–25% → 60% · &lt;15% → 40%.</li>
+      <li><b>Máximo 3 movimientos por semana.</b> Si "tocarían" cinco, se hacen los dos más claros y el resto espera.</li>
+      <li><b>Nunca se añade a una posición por haber caído.</b></li>
+    </ol>
+    <div class="motto">Si un valor marca RS 100 con la EMA21 perdida, la respuesta es SALIDA. El sistema no negocia con ningún ticker.</div>
+  </div>
+
+  <div class="grid">
+    <!-- SEMÁFORO -->
+    <section>
+      <h2>Semáforo de amplitud <span class="tag d">del scanner semanal</span></h2>
+      <div class="gauge-wrap">
+        <div class="gauge-inputs">
+          <div class="fld"><label for="ttPass">Pasan Trend Template</label><input type="number" id="ttPass" min="0"></div>
+          <div class="fld"><label for="ttTotal">Universo total</label><input type="number" id="ttTotal" min="1"></div>
+        </div>
+        <div class="gauge" role="img" aria-label="Amplitud de mercado">
+          <div class="gz z1"></div><div class="gz z2"></div><div class="gz z3"></div>
+          <div class="needle" id="needle"></div>
+        </div>
+        <div class="gauge-labels"><span>0–15%</span><span>15–25%</span><span>&gt;25%</span></div>
+        <div class="regime">
+          <div><div class="small">Amplitud</div><div class="big" id="ampPct">—</div></div>
+          <div><div class="small">Régimen</div><div class="big" id="regime">—</div></div>
+          <div><div class="small">Exposición objetivo</div><div class="big" id="expTarget">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAPITAL / EXPOSICIÓN -->
+    <section>
+      <h2>Capital y exposición real</h2>
+      <div class="gauge-inputs" style="margin-bottom:10px">
+        <div class="fld"><label for="capital">Valor total de la cuenta (€)</label><input type="number" id="capital" min="0" step="100" style="width:160px"></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="kInvertido">—</div><div class="l">Invertido</div></div>
+        <div class="kpi"><div class="v" id="kCaja">—</div><div class="l">Caja</div></div>
+        <div class="kpi"><div class="v" id="kExpReal">—</div><div class="l">Exposición real</div></div>
+        <div class="kpi"><div class="v" id="kPosiciones">—</div><div class="l">Posiciones</div></div>
+      </div>
+      <div class="exp-compare">
+        <span class="small">0%</span>
+        <div class="exp-track"><div class="exp-fill" id="expFill"></div><div class="exp-target" id="expTargetMark" title="Objetivo según amplitud"></div></div>
+        <span class="small">100%</span>
+      </div>
+      <div class="small" style="margin-top:6px">La marca ámbar es la exposición objetivo que fija el semáforo. La barra azul, la real.</div>
+      <div id="ucitsWarn" class="warnbox" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- BLOQUES -->
+  <section>
+    <h2>Bloques sectoriales <span class="tag d">techo 20% por bloque — el techo es límite, nunca objetivo</span></h2>
+    <div class="blocks" id="blocks"></div>
+  </section>
+
+  <!-- CARTERA -->
+  <section>
+    <h2>Cartera <span class="tag d">checks del repaso semanal por posición</span></h2>
+    <div id="moveWarn" class="warnbox"></div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th>Valor</th><th>Bloque</th><th>Tier</th>
+        <th class="num">Peso obj.</th><th class="num" title="Nº de acciones — necesario para la valoración automática">Títulos</th><th class="num">Valor €</th><th class="num">Peso real</th>
+        <th title="Cierre semanal sobre EMA21">EMA21</th>
+        <th title="Sigue pasando el Trend Template">TT</th>
+        <th title="RS sobre umbral">RS</th>
+        <th class="num" title="Días hasta earnings">Earn. d</th>
+        <th>Estado</th><th></th>
+      </tr></thead>
+      <tbody id="posBody"></tbody>
+    </table>
+    </div>
+    <div class="formline">
+      <div class="fld"><label>Ticker</label><input id="npTicker" style="width:90px" placeholder="ABC"></div>
+      <div class="fld"><label>Bloque</label><select id="npBloque"></select></div>
+      <div class="fld"><label>Tier</label><select id="npTier"><option value="satelite">Satélite 5%</option><option value="nucleo">Núcleo 10%</option></select></div>
+      <div class="fld"><label>Setup</label><select id="npSetup"><option>A rotura</option><option>B pullback</option></select></div>
+      <button class="primary" id="btnAdd">Dar de alta</button>
+      <span class="small">Toda alta entra al 5% con setup activo (Regla 3). El alta queda registrada en rotaciones.</span>
+    </div>
+  </section>
+
+  <!-- BANQUILLO -->
+  <section>
+    <h2>Banquillo <span class="tag d">sustitutos y vigilancia — no posicionados</span></h2>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Valor</th><th>Bloque</th><th>Motivo de espera</th><th></th></tr></thead>
+      <tbody id="benchBody"></tbody>
+    </table>
+    </div>
+    <div class="formline">
+      <div class="fld"><label>Ticker</label><input id="nbTicker" style="width:90px"></div>
+      <div class="fld"><label>Bloque</label><select id="nbBloque"></select></div>
+      <div class="fld"><label>Motivo</label><input id="nbMotivo" style="width:260px" placeholder="p. ej. extendido, esperar Setup B"></div>
+      <button id="btnBench">Añadir al banquillo</button>
+    </div>
+  </section>
+
+  <div class="grid">
+    <!-- CHECKLIST -->
+    <section>
+      <h2>Rutina semanal <span class="tag"><button id="btnNewWeek">Iniciar semana</button></span></h2>
+      <div class="small" id="weekLabel" style="margin-bottom:8px"></div>
+      <div class="check-list" id="checklist"></div>
+    </section>
+
+    <!-- ALTA ROTACIÓN MANUAL -->
+    <section>
+      <h2>Registrar movimiento</h2>
+      <div class="formline" style="border:none;padding-top:0;margin-top:0">
+        <div class="fld"><label>Tipo</label><select id="mvTipo">
+          <option>BAJA</option><option>ALTA</option><option>ASCENSO</option><option>REDUCCIÓN</option>
+        </select></div>
+        <div class="fld"><label>Ticker</label><input id="mvTicker" style="width:90px"></div>
+        <div class="fld"><label>Motivo (regla)</label><select id="mvMotivo">
+          <option>EMA21 perdida</option><option>Cae del Trend Template</option><option>RS bajo umbral</option>
+          <option>Veto earnings</option><option>Setup A rotura</option><option>Setup B pullback</option>
+          <option>Ascenso a núcleo</option>
+        </select></div>
+        <div class="fld" style="flex:1;min-width:180px"><label>Notas</label><input id="mvNotas" style="width:100%"></div>
+        <button class="primary" id="btnMove">Registrar</button>
+      </div>
+      <div class="small" style="margin-top:8px">Movimientos esta semana: <b id="weekMoves">0</b> / 3. No existe el motivo "discrecional": si no encaja en una regla, no se ejecuta.</div>
+    </section>
+  </div>
+
+  <!-- LOG -->
+  <section>
+    <h2>Registro de rotaciones</h2>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Valor</th><th>Motivo</th><th>Notas</th><th></th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table>
+    </div>
+    <div class="small" id="logEmpty" style="margin-top:8px">Sin movimientos registrados. El mejor registro es uno corto.</div>
+  </section>
+
+  <footer>Cartera Swing · datos en localStorage de este navegador · exporta el JSON tras cada revisión semanal</footer>
+</main>
+
+<script>
+'use strict';
+const LS_KEY='cartera_swing_v1';
+const BLOQUES=['Salud','Hardware/Redes','Ciberseguridad','Software/Nube','Semiconductores','Energía','Materiales','Financieras','Industriales/Defensa','Consumo discrecional','Consumo básico','Comunicación/Media'];
+const MIGRA_BLOQUE={'Energía/Materiales':'Energía','Defensa/Consumo':'Consumo discrecional'};
+const MIGRA_TICKER={'VLO':'Energía','FCX':'Materiales','IDR.MC':'Industriales/Defensa','GRMN':'Consumo discrecional','DDOG':'Software/Nube'};
+const CAP_BLOQUE=20, CAP_POS=10, CAP_SUMA_GRANDES=40, MAX_MOVES=3;
+const CHECK_ITEMS=[
+ 'Relanzar el scanner y anotar amplitud del Trend Template (fija la exposición objetivo).',
+ 'Repasar salidas: EMA21 semanal, Trend Template, RS y días a earnings de cada posición.',
+ 'Evaluar ascensos: solo con hueco de núcleo, RS ≥ 95 y setup fresco.',
+ 'Entradas nuevas al 5% con Setup A/B y hueco en su bloque (techo 20%).',
+ 'Contar movimientos: máximo 3. Ejecutar los más claros, aparcar el resto. Exportar JSON.'
+];
+const SEED={
+ capital:100000,
+ amplitud:{pasan:153,total:578},
+ posiciones:[
+  p('VLO','Energía','nucleo'),            p('NTAP','Hardware/Redes','nucleo'),
+  p('PANW','Ciberseguridad','nucleo'),   p('CRL','Salud','nucleo'),
+  p('DELL','Hardware/Redes','satelite'), p('APH','Hardware/Redes','satelite'),
+  p('CNC','Salud','satelite'),           p('DXCM','Salud','satelite'),
+  p('CRWD','Ciberseguridad','satelite'), p('FCX','Materiales','satelite'),
+  p('IDR.MC','Industriales/Defensa','satelite'), p('GRMN','Consumo discrecional','satelite')
+ ],
+ banquillo:[
+  b('FTNT','Ciberseguridad','Techo sectorial de ciber cubierto — primer sustituto'),
+  b('FFIV','Hardware/Redes','Sustituto; esperar hueco de bloque'),
+  b('HPE','Hardware/Redes','Extendido (-13,5% del máximo) — esperar Setup B'),
+  b('DDOG','Software/Nube','Extendido (-13,5%) — esperar Setup B'),
+  b('ANET','Hardware/Redes','Extendido (-11,0%) — esperar Setup B'),
+  b('BAX','Salud','Extendido (-7,4%) — esperar Setup B'),
+  b('KEYS','Hardware/Redes','Veto earnings (<7 días)'),
+  b('HUM','Salud','Fecha de earnings desconocida — veto')
+ ],
+ rotaciones:[],
+ checklist:{semana:null,items:[false,false,false,false,false]}
+};
+function p(t,bl,tier){return {id:crypto.randomUUID(),ticker:t,bloque:bl,tier:tier,titulos:0,valor:0,ema21:true,tt:true,rs:true,earn:''};}
+function b(t,bl,m){return {id:crypto.randomUUID(),ticker:t,bloque:bl,motivo:m};}
+
+let S=load();
+function load(){
+  let data=null;
+  try{const raw=localStorage.getItem(LS_KEY); if(raw) data=JSON.parse(raw);}catch(e){}
+  if(!data) return structuredClone(SEED);
+  [...(data.posiciones||[]),...(data.banquillo||[])].forEach(x=>{
+    if(x.titulos===undefined) x.titulos=0;
+    if(MIGRA_TICKER[x.ticker]) x.bloque=MIGRA_TICKER[x.ticker];
+    else if(MIGRA_BLOQUE[x.bloque]) x.bloque=MIGRA_BLOQUE[x.bloque];
+    if(!BLOQUES.includes(x.bloque)) x.bloque=BLOQUES[0];
+  });
+  return data;
+}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(S)); render();}
+
+const $=id=>document.getElementById(id);
+const eur=n=>n.toLocaleString('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const pct=n=>(isFinite(n)?n.toFixed(1).replace('.',','):'—')+'%';
+function isoWeek(d){
+  d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+  const y0=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return d.getUTCFullYear()+'-S'+String(Math.ceil((((d-y0)/86400000)+1)/7)).padStart(2,'0');
+}
+function pesoObj(pos){return pos.tier==='nucleo'?10:5;}
+function targetExp(amp){ if(!isFinite(amp)) return null; if(amp>25) return 80; if(amp>=15) return 60; return 40; }
+
+function render(){
+  // Semáforo
+  $('ttPass').value=S.amplitud.pasan; $('ttTotal').value=S.amplitud.total;
+  const amp=S.amplitud.total>0? S.amplitud.pasan/S.amplitud.total*100 : NaN;
+  $('ampPct').textContent=pct(amp);
+  const tgt=targetExp(amp);
+  let reg='—',cls='d';
+  if(isFinite(amp)){ if(amp>25){reg='EXPANSIÓN';cls='g'} else if(amp>=15){reg='DETERIORO';cls='a'} else {reg='CONTRACCIÓN';cls='r'} }
+  const regEl=$('regime'); regEl.textContent=reg; regEl.className='big '+cls;
+  $('expTarget').textContent=tgt!==null?tgt+'%':'—';
+  $('needle').style.left='calc('+Math.max(0,Math.min(100,isFinite(amp)?amp:0))+'% - 1px)';
+
+  // Capital / exposición
+  $('capital').value=S.capital;
+  const invertido=S.posiciones.reduce((a,x)=>a+(+x.valor||0),0);
+  const caja=S.capital-invertido;
+  const expReal=S.capital>0? invertido/S.capital*100 : 0;
+  $('kInvertido').textContent=eur(invertido);
+  $('kCaja').textContent=eur(caja); $('kCaja').className='v '+(caja<0?'r':'');
+  $('kExpReal').textContent=pct(expReal);
+  $('kPosiciones').textContent=S.posiciones.length;
+  $('expFill').style.width=Math.max(0,Math.min(100,expReal))+'%';
+  $('expTargetMark').style.left='calc('+(tgt??0)+'% - 1px)';
+  $('expTargetMark').style.display=tgt!==null?'block':'none';
+
+  // Aviso 5/10/40
+  const grandes=S.posiciones.filter(x=>pesoObj(x)>5).reduce((a,x)=>a+pesoObj(x),0);
+  const w=$('ucitsWarn');
+  if(grandes>CAP_SUMA_GRANDES){ w.style.display='block';
+    w.textContent='Regla 5/10/40 rota en pesos objetivo: las posiciones >5% suman '+grandes+'% (máx. '+CAP_SUMA_GRANDES+'%). Sobra algún núcleo.';
+  } else w.style.display='none';
+
+  // Bloques
+  const bl=$('blocks'); bl.innerHTML='';
+  BLOQUES.forEach(name=>{
+    const suma=S.posiciones.filter(x=>x.bloque===name).reduce((a,x)=>a+pesoObj(x),0);
+    const div=document.createElement('div');
+    div.className='blk'+(suma>CAP_BLOQUE?' over':'')+(suma===0?' empty':'');
+    div.innerHTML='<div class="bn">'+name+'</div><div class="bw">'+suma+'% <span class="small">/ '+CAP_BLOQUE+'%</span></div>'+
+      '<div class="bar"><i style="width:'+Math.min(100,suma/CAP_BLOQUE*100)+'%"></i></div>'+
+      (suma>CAP_BLOQUE?'<div class="small r">Techo superado — sin altas en este bloque</div>':'');
+    bl.appendChild(div);
+  });
+
+  // Posiciones
+  const tb=$('posBody'); tb.innerHTML='';
+  const orden={'nucleo':0,'satelite':1};
+  [...S.posiciones].sort((a,z)=>orden[a.tier]-orden[z.tier]||a.ticker.localeCompare(z.ticker)).forEach(x=>{
+    const pr=S.capital>0?(+x.valor||0)/S.capital*100:0;
+    const fallo=!x.ema21||!x.tt||!x.rs;
+    const earn=x.earn===''?null:+x.earn;
+    const veto=earn!==null&&earn<7;
+    const pasiva=pr>CAP_POS;
+    let estado='<span class="badge b-green">OK</span>';
+    if(fallo) estado='<span class="badge b-red">SALIDA</span>';
+    else if(veto) estado='<span class="badge b-amber">VETO EARNINGS — reducir/cerrar</span>';
+    else if(pasiva) estado='<span class="badge b-blue">&gt;10% pasiva — no ampliar</span>';
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+     '<td class="tk">'+x.ticker+'</td>'+
+     '<td class="d">'+x.bloque+'</td>'+
+     '<td><span class="badge '+(x.tier==='nucleo'?'b-amber':'b-dim')+'">'+(x.tier==='nucleo'?'NÚCLEO':'SATÉLITE')+'</span></td>'+
+     '<td class="num">'+pesoObj(x)+'%</td>'+
+     '<td class="num"><input type="number" data-f="titulos" data-id="'+x.id+'" value="'+(x.titulos||0)+'" min="0" style="width:70px"></td>'+
+     '<td class="num"><input type="number" data-f="valor" data-id="'+x.id+'" value="'+x.valor+'" min="0" step="50" style="width:95px"></td>'+
+     '<td class="num '+(pasiva?'a':'')+'">'+pct(pr)+'</td>'+
+     '<td><input type="checkbox" data-f="ema21" data-id="'+x.id+'" '+(x.ema21?'checked':'')+'></td>'+
+     '<td><input type="checkbox" data-f="tt" data-id="'+x.id+'" '+(x.tt?'checked':'')+'></td>'+
+     '<td><input type="checkbox" data-f="rs" data-id="'+x.id+'" '+(x.rs?'checked':'')+'></td>'+
+     '<td class="num"><input type="number" data-f="earn" data-id="'+x.id+'" value="'+x.earn+'" min="0" style="width:60px" '+(veto?'class="a"':'')+'></td>'+
+     '<td>'+estado+'</td>'+
+     '<td><button class="xbtn" data-del="'+x.id+'" title="Dar de baja (registra BAJA)">&#10005;</button></td>';
+    tb.appendChild(tr);
+  });
+
+  // Banquillo
+  const bb=$('benchBody'); bb.innerHTML='';
+  S.banquillo.forEach(x=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="tk">'+x.ticker+'</td><td class="d">'+x.bloque+'</td><td>'+x.motivo+'</td>'+
+      '<td><button class="xbtn" data-bdel="'+x.id+'" title="Quitar del banquillo">&#10005;</button></td>';
+    bb.appendChild(tr);
+  });
+
+  // Selects de bloque
+  ['npBloque','nbBloque'].forEach(id=>{
+    const s=$(id); const cur=s.value; s.innerHTML=BLOQUES.map(x=>'<option>'+x+'</option>').join('');
+    if(cur) s.value=cur;
+  });
+
+  // Checklist
+  const wk=isoWeek(new Date());
+  $('weekLabel').textContent=S.checklist.semana? 'Semana '+S.checklist.semana+(S.checklist.semana!==wk?' (antigua — inicia la nueva)':'') : 'Sin semana iniciada';
+  const cl=$('checklist'); cl.innerHTML='';
+  CHECK_ITEMS.forEach((txt,i)=>{
+    const done=S.checklist.items[i];
+    const div=document.createElement('div');
+    div.className='check-item'+(done?' done':'');
+    div.innerHTML='<input type="checkbox" data-chk="'+i+'" '+(done?'checked':'')+'><span class="st">'+(i+1)+'</span><span>'+txt+'</span>';
+    cl.appendChild(div);
+  });
+
+  // Movimientos de la semana
+  const moves=S.rotaciones.filter(r=>isoWeek(new Date(r.fecha))===wk).length;
+  $('weekMoves').textContent=moves;
+  const mw=$('moveWarn');
+  if(moves>=MAX_MOVES){ mw.style.display='block';
+    mw.textContent='Límite semanal alcanzado ('+moves+'/'+MAX_MOVES+'). Regla 6: lo que quede por tocar, espera a la próxima semana.';
+  } else mw.style.display='none';
+
+  // Log
+  const lb=$('logBody'); lb.innerHTML='';
+  [...S.rotaciones].sort((a,z)=>z.fecha.localeCompare(a.fecha)).forEach(r=>{
+    const tr=document.createElement('tr'); tr.className='logrow';
+    const cls=r.tipo==='ALTA'?'b-green':r.tipo==='BAJA'?'b-red':r.tipo==='ASCENSO'?'b-amber':'b-dim';
+    tr.innerHTML='<td class="d">'+r.fecha.slice(0,10)+'</td><td><span class="badge '+cls+'">'+r.tipo+'</span></td>'+
+      '<td class="tk">'+r.ticker+'</td><td>'+r.motivo+'</td><td class="d">'+(r.notas||'')+'</td>'+
+      '<td><button class="xbtn" data-ldel="'+r.id+'">&#10005;</button></td>';
+    lb.appendChild(tr);
+  });
+  $('logEmpty').style.display=S.rotaciones.length?'none':'block';
+
+  $('hmeta').textContent=S.posiciones.length+' posiciones · '+S.banquillo.length+' en banquillo · '+wk+
+    (S.ultimaAct?' · últ. actualización '+new Date(S.ultimaAct).toLocaleDateString('es-ES'):'');
+}
+
+// ---- auto-fetch opcional de cartera_update.json ----
+async function autoFetchUpdate(){
+  try{
+    const res = await fetch("cartera_update.json?v=" + new Date().getTime());
+    if(res.ok){
+      const data = await res.json();
+      aplicarUpdate(data);
+    }
+  }catch(e){}
+}
+
+// ---- eventos ----
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.f){
+    const pos=S.posiciones.find(x=>x.id===t.dataset.id); if(!pos) return;
+    if(t.type==='checkbox') pos[t.dataset.f]=t.checked;
+    else pos[t.dataset.f]=t.dataset.f==='earn'?(t.value===''?'':Math.max(0,+t.value)):Math.max(0,+t.value||0);
+    save();
+  }
+  if(t.dataset.chk!==undefined){ S.checklist.items[+t.dataset.chk]=t.checked; save(); }
+  if(t.id==='ttPass'){S.amplitud.pasan=Math.max(0,+t.value||0);save();}
+  if(t.id==='ttTotal'){S.amplitud.total=Math.max(1,+t.value||1);save();}
+  if(t.id==='capital'){S.capital=Math.max(0,+t.value||0);save();}
+});
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.del){
+    const pos=S.posiciones.find(x=>x.id===t.dataset.del);
+    if(pos&&confirm('Dar de baja '+pos.ticker+'. Se registrará como BAJA. ¿Confirmar?')){
+      S.posiciones=S.posiciones.filter(x=>x.id!==t.dataset.del);
+      S.rotaciones.push({id:crypto.randomUUID(),fecha:new Date().toISOString(),tipo:'BAJA',ticker:pos.ticker,motivo:'EMA21 perdida',notas:'(editar motivo si procede)'});
+      save();
+    }
+  }
+  if(t.dataset.bdel){ S.banquillo=S.banquillo.filter(x=>x.id!==t.dataset.bdel); save(); }
+  if(t.dataset.ldel){ S.rotaciones=S.rotaciones.filter(x=>x.id!==t.dataset.ldel); save(); }
+});
+$('btnAdd').onclick=()=>{
+  const tk=$('npTicker').value.trim().toUpperCase(); if(!tk) return alert('Falta el ticker.');
+  if(S.posiciones.some(x=>x.ticker===tk)) return alert(tk+' ya está en cartera.');
+  const bloque=$('npBloque').value, tier=$('npTier').value;
+  if(tier==='nucleo') return alert('Regla 3: toda alta entra como Satélite al 5%. El ascenso a núcleo se gana después (Regla 4).');
+  const suma=S.posiciones.filter(x=>x.bloque===bloque).reduce((a,x)=>a+pesoObj(x),0);
+  if(suma+5>CAP_BLOQUE) return alert('Regla 3: el bloque '+bloque+' quedaríá en '+(suma+5)+'% y el techo es '+CAP_BLOQUE+'%. No hay hueco.');
+  const wk=isoWeek(new Date());
+  if(S.rotaciones.filter(r=>isoWeek(new Date(r.fecha))===wk).length>=MAX_MOVES)
+    return alert('Regla 6: límite de '+MAX_MOVES+' movimientos esta semana. El alta espera.');
+  S.posiciones.push(p(tk,bloque,'satelite'));
+  S.rotaciones.push({id:crypto.randomUUID(),fecha:new Date().toISOString(),tipo:'ALTA',ticker:tk,motivo:'Setup '+$('npSetup').value,notas:''});
+  $('npTicker').value=''; save();
+};
+$('btnBench').onclick=()=>{
+  const tk=$('nbTicker').value.trim().toUpperCase(); if(!tk) return alert('Falta el ticker.');
+  S.banquillo.push(b(tk,$('nbBloque').value,$('nbMotivo').value.trim()||'—'));
+  $('nbTicker').value='';$('nbMotivo').value=''; save();
+};
+$('btnMove').onclick=()=>{
+  const tk=$('mvTicker').value.trim().toUpperCase(); if(!tk) return alert('Falta el ticker.');
+  S.rotaciones.push({id:crypto.randomUUID(),fecha:new Date().toISOString(),tipo:$('mvTipo').value,ticker:tk,motivo:$('mvMotivo').value,notas:$('mvNotas').value.trim()});
+  $('mvTicker').value='';$('mvNotas').value=''; save();
+};
+$('btnNewWeek').onclick=()=>{ S.checklist={semana:isoWeek(new Date()),items:CHECK_ITEMS.map(()=>false)}; save(); };
+$('btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='cartera_swing_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+};
+$('btnImport').onclick=()=>$('fileImport').click();
+$('fileImport').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const data=JSON.parse(r.result);
+      if(!data.posiciones||!data.amplitud) throw new Error('estructura');
+      S=data; save();
+    }catch(err){ alert('El archivo no tiene la estructura esperada de la cartera.'); } };
+  r.readAsText(f); e.target.value='';
+};
+$('btnReset').onclick=()=>{
+  if(confirm('Restaurar la cartera inicial del 10/8/26. Se pierden valores, checks y registro. ¿Confirmar?')){
+    S=structuredClone(SEED); save();
+  }
+};
+$('btnUpdate').onclick=()=>$('fileUpdate').click();
+$('fileUpdate').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ aplicarUpdate(JSON.parse(r.result)); }
+    catch(err){ alert('El archivo no es un cartera_update.json válido: '+err.message); } };
+  r.readAsText(f); e.target.value='';
+};
+function aplicarUpdate(u){
+  if(!u.valores||typeof u.valores!=='object') throw new Error('falta el objeto "valores"');
+  if(u.amplitud&&isFinite(u.amplitud.pasan)&&isFinite(u.amplitud.total)){
+    S.amplitud.pasan=+u.amplitud.pasan; S.amplitud.total=Math.max(1,+u.amplitud.total);
+  }
+  const fx=(typeof u.eurusd==='number'&&u.eurusd>0)?u.eurusd:null;
+  const aplicados=[],faltan=[],sinFx=[];
+  S.posiciones.forEach(pos=>{
+    const v=u.valores[pos.ticker];
+    if(!v){faltan.push(pos.ticker);return;}
+    if('ema21_ok'in v) pos.ema21=!!v.ema21_ok;
+    if('trend_template'in v) pos.tt=!!v.trend_template;
+    if('rs_ok'in v) pos.rs=!!v.rs_ok;
+    if('earnings_dias'in v) pos.earn=(v.earnings_dias==null)?'':Math.max(0,+v.earnings_dias);
+    if((+pos.titulos||0)>0&&typeof v.cierre==='number'){
+      let val=v.cierre*pos.titulos;
+      if((v.divisa||'USD').toUpperCase()!=='EUR'){
+        if(fx) val=val/fx; else {sinFx.push(pos.ticker); val=null;}
+      }
+      if(val!==null) pos.valor=Math.round(val);
+    }
+    aplicados.push(pos.ticker);
+  });
+  S.ultimaAct=u.generado||new Date().toISOString();
+  save();
+}
+
+render();
+autoFetchUpdate();
+</script>
+</body>
+</html>
