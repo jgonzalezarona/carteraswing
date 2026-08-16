@@ -1,0 +1,9 @@
+{
+  "generado": "2026-08-16T12:00:00Z",
+  "eurusd": 1.09,
+  "amplitud": { "pasan": 153, "total": 578 },
+  "valores": {
+    "VLO": { "ema21_ok": true, "trend_template": true, "rs_ok": true, "earnings_dias": 86, "cierre": 308.99, "divisa": "USD" },
+    "NTAP": { "ema21_ok": true, "trend_template": true, "rs_ok": true, "earnings_dias": 29, "cierre": 183.76, "divisa": "USD" }
+  }
+}
