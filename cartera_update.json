@@ -1,8 +1,8 @@
 {
-  "generado": "2026-10-10T01:04:23+00:00",
-  "eurusd": 1.1206,
+  "generado": "2026-10-16T22:10:18+00:00",
+  "eurusd": 1.1228,
   "amplitud": {
-    "pasan": 79,
+    "pasan": 99,
     "total": 578
   },
   "valores": {
@@ -10,72 +10,72 @@
       "ema21_ok": true,
       "trend_template": true,
       "rs_ok": true,
-      "earnings_dias": 11,
-      "cierre": 443.8,
+      "earnings_dias": 5,
+      "cierre": 444.71,
       "divisa": "USD"
     },
     "NTAP": {
-      "ema21_ok": true,
+      "ema21_ok": false,
       "trend_template": true,
       "rs_ok": true,
-      "earnings_dias": 51,
-      "cierre": 231.05,
+      "earnings_dias": 45,
+      "cierre": 203.8,
       "divisa": "USD"
     },
     "PANW": {
-      "ema21_ok": true,
-      "trend_template": true,
+      "ema21_ok": false,
+      "trend_template": false,
       "rs_ok": true,
-      "earnings_dias": 39,
-      "cierre": 398.5,
+      "earnings_dias": null,
+      "cierre": 342.0,
       "divisa": "USD"
     },
     "CRL": {
       "ema21_ok": true,
       "trend_template": true,
       "rs_ok": true,
-      "earnings_dias": 24,
-      "cierre": 298.0,
+      "earnings_dias": 18,
+      "cierre": 300.15,
       "divisa": "USD"
     },
     "DELL": {
-      "ema21_ok": true,
-      "trend_template": true,
-      "rs_ok": true,
-      "earnings_dias": 47,
-      "cierre": 574.55,
-      "divisa": "USD"
-    },
-    "APH": {
-      "ema21_ok": true,
-      "trend_template": true,
-      "rs_ok": true,
-      "earnings_dias": 17,
-      "cierre": 85.32,
-      "divisa": "USD"
-    },
-    "CNC": {
-      "ema21_ok": true,
-      "trend_template": false,
-      "rs_ok": true,
-      "earnings_dias": null,
-      "cierre": 64.54,
-      "divisa": "USD"
-    },
-    "DXCM": {
       "ema21_ok": false,
       "trend_template": false,
       "rs_ok": true,
       "earnings_dias": null,
-      "cierre": 84.41,
+      "cierre": 451.71,
       "divisa": "USD"
     },
-    "CRWD": {
+    "APH": {
+      "ema21_ok": false,
+      "trend_template": false,
+      "rs_ok": false,
+      "earnings_dias": null,
+      "cierre": 79.35,
+      "divisa": "USD"
+    },
+    "CNC": {
       "ema21_ok": true,
       "trend_template": true,
       "rs_ok": true,
-      "earnings_dias": 51,
-      "cierre": 263.01,
+      "earnings_dias": 10,
+      "cierre": 69.16,
+      "divisa": "USD"
+    },
+    "DXCM": {
+      "ema21_ok": true,
+      "trend_template": false,
+      "rs_ok": true,
+      "earnings_dias": null,
+      "cierre": 86.04,
+      "divisa": "USD"
+    },
+    "CRWD": {
+      "ema21_ok": false,
+      "trend_template": false,
+      "rs_ok": true,
+      "earnings_dias": null,
+      "cierre": 227.39,
       "divisa": "USD"
     },
     "FCX": {
@@ -83,23 +83,23 @@
       "trend_template": false,
       "rs_ok": true,
       "earnings_dias": null,
-      "cierre": 71.14,
+      "cierre": 69.54,
       "divisa": "USD"
     },
     "IDR.MC": {
-      "ema21_ok": false,
+      "ema21_ok": true,
       "trend_template": false,
       "rs_ok": true,
       "earnings_dias": null,
-      "cierre": 58.32,
+      "cierre": 63.1,
       "divisa": "EUR"
     },
     "GRMN": {
-      "ema21_ok": false,
+      "ema21_ok": true,
       "trend_template": false,
       "rs_ok": true,
       "earnings_dias": null,
-      "cierre": 268.44,
+      "cierre": 284.79,
       "divisa": "USD"
     }
   }
